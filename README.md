@@ -1,12 +1,19 @@
 # 🎲 Log Probability Explorer
 
-An interactive Streamlit app that visualises **token-level log probabilities** from Azure OpenAI (Azure AI Foundry).  
+An interactive Streamlit app that visualises **token-level log probabilities** from **OpenAI** or **Azure OpenAI (Azure AI Foundry)**.  
 Built as an educational tool to help explain how Large Language Models generate text.
+
+## Prerequisites
+
+- Python 3.10+
+- **One** of the following:
+  - An [OpenAI API key](https://platform.openai.com/account/api-keys), **or**
+  - An Azure AI Foundry / Azure OpenAI resource with a deployed chat model
 
 ## What It Does
 
 1. **Tokenises your prompt** — shows exactly how the model splits your text into tokens, displayed as coloured badges.
-2. **Sends the prompt** to an Azure-hosted model (e.g. GPT-5.2) via the Chat Completions API with `logprobs` enabled.
+2. **Sends the prompt** to an OpenAI or Azure-hosted model via the Chat Completions API with `logprobs` enabled.
 3. **Displays the response** token-by-token with:
    - Colour-coded confidence badges (green → red)
    - A sortable data table with log probs, percentages, and top alternatives
@@ -15,30 +22,38 @@ Built as an educational tool to help explain how Large Language Models generate 
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.10+
-- An Azure AI Foundry / Azure OpenAI resource with a deployed chat model
-
 ### 1. Clone & install
 
 ```bash
-cd LogProp
 pip install -r requirements.txt
 ```
 
 ### 2. Configure `.env`
 
-Create (or edit) a `.env` file in the project root:
+Create (or edit) a `.env` file in the project root. Choose the section that matches your provider:
+
+#### Option A — OpenAI
 
 ```dotenv
+USE_AZURE=false
+OPENAI_API_KEY=sk-...your-openai-api-key...
+LOGPROB_MODEL=gpt-4o          # any model that supports logprobs
+```
+
+#### Option B — Azure OpenAI
+
+```dotenv
+USE_AZURE=true
 OPENAI_API_KEY=<your-azure-openai-key>
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.cognitiveservices.azure.com
 API_VERSION=2025-04-01-preview
-LOGPROB_MODEL=gpt-5.2
+LOGPROB_MODEL=gpt-5.2         # must match your Azure deployment name
 ```
 
-> **Note:** The endpoint should be the *base* URL of your Azure Cognitive Services resource — the SDK builds the full Chat Completions path automatically.
+> **Notes:**
+> - `USE_AZURE` defaults to `true` when omitted, so existing Azure setups continue to work without changes.
+> - For **Azure**, the endpoint should be the *base* URL of your Azure Cognitive Services resource — the SDK builds the full Chat Completions path automatically.
+> - For **OpenAI**, `LOGPROB_MODEL` should be an OpenAI model ID (e.g. `gpt-4o`, `gpt-4o-mini`). For **Azure**, it should match the **deployment name** in your Azure resource.
 
 ### 3. Run
 
@@ -74,8 +89,8 @@ The closer to zero, the more certain the model was.
 ## Project Structure
 
 ```
-LogProp/
-├── .env                 # Azure credentials (not committed)
+llm-logprob-demo/
+├── .env                 # API credentials (not committed)
 ├── logprob_demo.py      # Streamlit application
 ├── requirements.txt     # Python dependencies
 └── README.md            # This file
@@ -84,7 +99,7 @@ LogProp/
 ## Tech Stack
 
 - **[Streamlit](https://streamlit.io/)** — Web UI
-- **[OpenAI Python SDK](https://github.com/openai/openai-python)** — Azure OpenAI client (`AzureOpenAI`)
+- **[OpenAI Python SDK](https://github.com/openai/openai-python)** — Supports both `OpenAI` and `AzureOpenAI` clients
 - **[tiktoken](https://github.com/openai/tiktoken)** — BPE tokeniser for prompt visualisation
 - **[Plotly](https://plotly.com/python/)** — Interactive charts
 - **[python-dotenv](https://github.com/theskumar/python-dotenv)** — `.env` file loading

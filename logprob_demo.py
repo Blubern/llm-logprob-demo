@@ -2,7 +2,7 @@
 Log Probability Explorer — Streamlit App
 =========================================
 An educational tool that visualises token-level log probabilities
-returned by Azure OpenAI (Azure AI Foundry) chat completions.
+returned by OpenAI or Azure OpenAI (Azure AI Foundry) chat completions.
 
 Run with:  streamlit run logprob_demo.py
 """
@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 import streamlit as st
 import tiktoken
 from dotenv import load_dotenv
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 
 # ──────────────────────────────────────────────
 # 1. Configuration
@@ -23,19 +23,22 @@ from openai import AzureOpenAI
 
 load_dotenv()
 
+USE_AZURE = os.getenv("USE_AZURE", "true").lower() in ("true", "1", "yes")
 AZURE_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
 API_KEY = os.getenv("OPENAI_API_KEY", "")
 API_VERSION = os.getenv("API_VERSION", "2025-04-01-preview")
-MODEL = os.getenv("LOGPROB_MODEL", "gpt-5.2")
+MODEL = os.getenv("LOGPROB_MODEL", "gpt-5.2" if USE_AZURE else "gpt-4o")
 
 
-def _get_openai_client() -> AzureOpenAI:
-    """Build an AzureOpenAI client using API-key authentication."""
-    return AzureOpenAI(
-        azure_endpoint=AZURE_ENDPOINT,
-        api_key=API_KEY,
-        api_version=API_VERSION,
-    )
+def _get_openai_client() -> AzureOpenAI | OpenAI:
+    """Build an OpenAI or AzureOpenAI client using API-key authentication."""
+    if USE_AZURE:
+        return AzureOpenAI(
+            azure_endpoint=AZURE_ENDPOINT,
+            api_key=API_KEY,
+            api_version=API_VERSION,
+        )
+    return OpenAI(api_key=API_KEY)
 
 # ──────────────────────────────────────────────
 # 2. Page setup
@@ -143,15 +146,23 @@ with st.sidebar:
 # ──────────────────────────────────────────────
 
 st.title("🎲  Log Probability Explorer")
-st.caption(
-    f"Model: **{MODEL}**  •  Endpoint: `{AZURE_ENDPOINT}`  •  "
-    f"API version: `{API_VERSION}`"
-)
+if USE_AZURE:
+    st.caption(
+        f"Model: **{MODEL}**  •  Endpoint: `{AZURE_ENDPOINT}`  •  "
+        f"API version: `{API_VERSION}`"
+    )
+else:
+    st.caption(f"Model: **{MODEL}**  •  Provider: OpenAI API")
 
-if not AZURE_ENDPOINT or not API_KEY:
+if USE_AZURE and (not AZURE_ENDPOINT or not API_KEY):
     st.error(
-        "Missing credentials.  Make sure `AZURE_OPENAI_ENDPOINT` and "
+        "Missing Azure credentials.  Make sure `AZURE_OPENAI_ENDPOINT` and "
         "`OPENAI_API_KEY` are set in your `.env` file."
+    )
+    st.stop()
+elif not USE_AZURE and not API_KEY:
+    st.error(
+        "Missing OpenAI API key.  Make sure `OPENAI_API_KEY` is set in your `.env` file."
     )
     st.stop()
 
