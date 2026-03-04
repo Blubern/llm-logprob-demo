@@ -43,7 +43,7 @@ LOGPROB_MODEL=gpt-5.2
 ### 3. Run
 
 ```bash
-streamlit run logprob_demo.py
+python -m streamlit run logprob_demo.py
 ```
 
 The app opens in your browser at `http://localhost:8501`.
