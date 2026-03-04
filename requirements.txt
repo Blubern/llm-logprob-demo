@@ -1,0 +1,5 @@
+openai>=1.60.0
+tiktoken>=0.7.0
+streamlit>=1.38.0
+python-dotenv>=1.0.0
+plotly>=5.20.0
