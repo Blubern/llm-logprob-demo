@@ -23,7 +23,6 @@ Built as an educational tool to help explain how Large Language Models generate 
 ### 1. Clone & install
 
 ```bash
-cd LogProp
 pip install -r requirements.txt
 ```
 
