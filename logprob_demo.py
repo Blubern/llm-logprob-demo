@@ -123,7 +123,7 @@ with st.sidebar:
     st.header("⚙️  Settings")
     top_logprobs_n = st.slider(
         "Top-N alternatives per token",
-        min_value=1, max_value=10, value=5,
+        min_value=1, max_value=5, value=5,
         help="How many alternative tokens to show at each position.",
     )
     max_tokens = st.slider(
@@ -133,7 +133,7 @@ with st.sidebar:
     )
     temperature = st.slider(
         "Temperature",
-        min_value=0.0, max_value=2.0, value=1.0, step=0.1,
+        min_value=0.0, max_value=2.0, value=0.7, step=0.1,
         help="Controls randomness. 0 = deterministic, 2 = very creative. "
              "Higher temperature → more varied output → lower per-token probabilities.",
     )
@@ -157,7 +157,7 @@ if not AZURE_ENDPOINT or not API_KEY:
 
 prompt = st.text_area(
     "Enter your prompt",
-    value="What can I do in the Lake of Constance area today? Answer with one sentence.",
+    value="Explain in one sentence why the sky is blue.",
     height=100,
 )
 

@@ -88,3 +88,11 @@ LogProp/
 - **[tiktoken](https://github.com/openai/tiktoken)** — BPE tokeniser for prompt visualisation
 - **[Plotly](https://plotly.com/python/)** — Interactive charts
 - **[python-dotenv](https://github.com/theskumar/python-dotenv)** — `.env` file loading
+
+## Screenshots
+
+![Screenshot 1](images/Screenshot1.png)
+
+![Screenshot 2](images/Screenshot2.png)
+
+![Screenshot 3](images/Screenshot3.png)
