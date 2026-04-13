@@ -2,7 +2,8 @@
 Log Probability Explorer — Streamlit App
 =========================================
 An educational tool that visualises token-level log probabilities
-returned by OpenAI or Azure OpenAI (Azure AI Foundry) chat completions.
+returned by OpenAI, Azure OpenAI (Azure AI Foundry), or GitHub Models
+chat completions.
 
 Run with:  streamlit run logprob_demo.py
 """
@@ -23,20 +24,38 @@ from openai import AzureOpenAI, OpenAI
 
 load_dotenv()
 
-USE_AZURE = os.getenv("USE_AZURE", "true").lower() in ("true", "1", "yes")
+# Determine provider: "azure", "openai", or "github".
+# Backward-compat: if PROVIDER is not set, fall back to USE_AZURE.
+_provider_env = os.getenv("PROVIDER", "").lower()
+if _provider_env in ("azure", "openai", "github"):
+    PROVIDER = _provider_env
+else:
+    # Legacy toggle
+    PROVIDER = "azure" if os.getenv("USE_AZURE", "true").lower() in ("true", "1", "yes") else "openai"
+
 AZURE_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
 API_KEY = os.getenv("OPENAI_API_KEY", "")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "") or API_KEY
 API_VERSION = os.getenv("API_VERSION", "2025-04-01-preview")
-MODEL = os.getenv("LOGPROB_MODEL", "gpt-5.2" if USE_AZURE else "gpt-4o")
+
+_DEFAULT_MODELS = {"azure": "gpt-5.2", "openai": "gpt-4o", "github": "gpt-4o"}
+MODEL = os.getenv("LOGPROB_MODEL", _DEFAULT_MODELS.get(PROVIDER, "gpt-4o"))
+
+GITHUB_MODELS_URL = "https://models.inference.ai.azure.com"
 
 
 def _get_openai_client() -> AzureOpenAI | OpenAI:
-    """Build an OpenAI or AzureOpenAI client using API-key authentication."""
-    if USE_AZURE:
+    """Build an OpenAI / AzureOpenAI / GitHub Models client."""
+    if PROVIDER == "azure":
         return AzureOpenAI(
             azure_endpoint=AZURE_ENDPOINT,
             api_key=API_KEY,
             api_version=API_VERSION,
+        )
+    if PROVIDER == "github":
+        return OpenAI(
+            base_url=GITHUB_MODELS_URL,
+            api_key=GITHUB_TOKEN,
         )
     return OpenAI(api_key=API_KEY)
 
@@ -146,21 +165,32 @@ with st.sidebar:
 # ──────────────────────────────────────────────
 
 st.title("🎲  Log Probability Explorer")
-if USE_AZURE:
+if PROVIDER == "azure":
     st.caption(
         f"Model: **{MODEL}**  •  Endpoint: `{AZURE_ENDPOINT}`  •  "
         f"API version: `{API_VERSION}`"
     )
+elif PROVIDER == "github":
+    st.caption(
+        f"Model: **{MODEL}**  •  Provider: GitHub Models  •  "
+        f"Endpoint: `{GITHUB_MODELS_URL}`"
+    )
 else:
     st.caption(f"Model: **{MODEL}**  •  Provider: OpenAI API")
 
-if USE_AZURE and (not AZURE_ENDPOINT or not API_KEY):
+if PROVIDER == "azure" and (not AZURE_ENDPOINT or not API_KEY):
     st.error(
         "Missing Azure credentials.  Make sure `AZURE_OPENAI_ENDPOINT` and "
         "`OPENAI_API_KEY` are set in your `.env` file."
     )
     st.stop()
-elif not USE_AZURE and not API_KEY:
+elif PROVIDER == "github" and not GITHUB_TOKEN:
+    st.error(
+        "Missing GitHub token.  Make sure `GITHUB_TOKEN` (or `OPENAI_API_KEY`) "
+        "is set in your `.env` file."
+    )
+    st.stop()
+elif PROVIDER == "openai" and not API_KEY:
     st.error(
         "Missing OpenAI API key.  Make sure `OPENAI_API_KEY` is set in your `.env` file."
     )

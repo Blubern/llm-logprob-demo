@@ -1,6 +1,6 @@
 # 🎲 Log Probability Explorer
 
-An interactive Streamlit app that visualises **token-level log probabilities** from **OpenAI** or **Azure OpenAI (Azure AI Foundry)**.  
+An interactive Streamlit app that visualises **token-level log probabilities** from **OpenAI**, **Azure OpenAI (Azure AI Foundry)**, or **GitHub Models**.  
 Built as an educational tool to help explain how Large Language Models generate text.
 
 ## Prerequisites
@@ -8,7 +8,8 @@ Built as an educational tool to help explain how Large Language Models generate 
 - Python 3.10+
 - **One** of the following:
   - An [OpenAI API key](https://platform.openai.com/account/api-keys), **or**
-  - An Azure AI Foundry / Azure OpenAI resource with a deployed chat model
+  - An Azure AI Foundry / Azure OpenAI resource with a deployed chat model, **or**
+  - A [GitHub Personal Access Token (PAT)](https://github.com/settings/tokens) for GitHub Models
 
 ## What It Does
 
@@ -35,7 +36,7 @@ Create (or edit) a `.env` file in the project root. Choose the section that matc
 #### Option A — OpenAI
 
 ```dotenv
-USE_AZURE=false
+PROVIDER=openai
 OPENAI_API_KEY=sk-...your-openai-api-key...
 LOGPROB_MODEL=gpt-4o          # any model that supports logprobs
 ```
@@ -43,17 +44,28 @@ LOGPROB_MODEL=gpt-4o          # any model that supports logprobs
 #### Option B — Azure OpenAI
 
 ```dotenv
-USE_AZURE=true
+PROVIDER=azure
 OPENAI_API_KEY=<your-azure-openai-key>
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.cognitiveservices.azure.com
 API_VERSION=2025-04-01-preview
 LOGPROB_MODEL=gpt-5.2         # must match your Azure deployment name
 ```
 
+#### Option C — GitHub Models
+
+```dotenv
+PROVIDER=github
+GITHUB_TOKEN=ghp_...your-github-pat...
+LOGPROB_MODEL=gpt-4o          # any model available on GitHub Models
+```
+
+To create a PAT, visit [github.com/settings/tokens](https://github.com/settings/tokens) and generate a token. If `GITHUB_TOKEN` is not set, the app falls back to `OPENAI_API_KEY`.
+
 > **Notes:**
-> - `USE_AZURE` defaults to `true` when omitted, so existing Azure setups continue to work without changes.
+> - `PROVIDER` accepts `azure`, `openai`, or `github`. If omitted, the legacy `USE_AZURE` toggle is used for backward compatibility.
 > - For **Azure**, the endpoint should be the *base* URL of your Azure Cognitive Services resource — the SDK builds the full Chat Completions path automatically.
-> - For **OpenAI**, `LOGPROB_MODEL` should be an OpenAI model ID (e.g. `gpt-4o`, `gpt-4o-mini`). For **Azure**, it should match the **deployment name** in your Azure resource.
+> - For **OpenAI** / **GitHub Models**, `LOGPROB_MODEL` should be a model ID (e.g. `gpt-4o`, `gpt-4o-mini`). For **Azure**, it should match the **deployment name** in your Azure resource.
+> - **GitHub Models** uses the endpoint `https://models.inference.ai.azure.com` which is handled automatically.
 
 ### 3. Run
 
@@ -99,7 +111,7 @@ llm-logprob-demo/
 ## Tech Stack
 
 - **[Streamlit](https://streamlit.io/)** — Web UI
-- **[OpenAI Python SDK](https://github.com/openai/openai-python)** — Supports both `OpenAI` and `AzureOpenAI` clients
+- **[OpenAI Python SDK](https://github.com/openai/openai-python)** — Supports `OpenAI`, `AzureOpenAI`, and GitHub Models clients
 - **[tiktoken](https://github.com/openai/tiktoken)** — BPE tokeniser for prompt visualisation
 - **[Plotly](https://plotly.com/python/)** — Interactive charts
 - **[python-dotenv](https://github.com/theskumar/python-dotenv)** — `.env` file loading
