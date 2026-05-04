@@ -13,9 +13,10 @@ Built as an educational tool to help explain how Large Language Models generate 
 
 ## What It Does
 
-1. **Tokenises your prompt** — shows exactly how the model splits your text into tokens, displayed as coloured badges.
-2. **Sends the prompt** to an OpenAI or Azure-hosted model via the Chat Completions API with `logprobs` enabled.
-3. **Displays the response** token-by-token with:
+1. **Explains context-window usage** — shows how much of the selected model's context window your prompt consumes, plus remaining headroom for output.
+2. **Tokenises your prompt locally with `tiktoken`** — supports OpenAI model tokenizers and shows either token text or token IDs.
+3. **Sends the prompt** to an OpenAI, Azure OpenAI, or GitHub Models chat model with `logprobs` enabled.
+4. **Displays the response** token-by-token with:
    - Colour-coded confidence badges (green → red)
    - A sortable data table with log probs, percentages, and top alternatives
    - An interactive Plotly bar chart of probabilities across the full response
@@ -77,6 +78,18 @@ The app opens in your browser at `http://localhost:8501`.
 
 ## Understanding the Output
 
+### Tokenizer / Context Window
+
+The **Tokenizer** tab is focused on prompt size and context-window planning:
+
+- The large context bar shows `prompt tokens / context window` for the selected OpenAI model.
+- The vertical marker reserves the model's max-output budget.
+- **Free in context** is total remaining room for prompt text, retrieved documents, tool calls, and generated output.
+- **Headroom for output** is the remaining safe prompt budget after reserving max output.
+- The token stream can display either readable token text or numeric token IDs. The full stream is optional for long prompts.
+
+### Logprob Confidence
+
 | Colour | Probability | Meaning |
 |--------|------------|---------|
 | 🟩 Green  | > 90 % | Model was very confident |
@@ -112,7 +125,7 @@ llm-logprob-demo/
 
 - **[Streamlit](https://streamlit.io/)** — Web UI
 - **[OpenAI Python SDK](https://github.com/openai/openai-python)** — Supports `OpenAI`, `AzureOpenAI`, and GitHub Models clients
-- **[tiktoken](https://github.com/openai/tiktoken)** — BPE tokeniser for prompt visualisation
+- **[tiktoken](https://github.com/openai/tiktoken)** — BPE tokeniser for OpenAI prompt visualisation and token IDs
 - **[Plotly](https://plotly.com/python/)** — Interactive charts
 - **[python-dotenv](https://github.com/theskumar/python-dotenv)** — `.env` file loading
 

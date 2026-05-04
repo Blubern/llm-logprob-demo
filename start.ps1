@@ -91,8 +91,11 @@ Write-Host "Project root: $projectRoot"
 if (Test-Path $requirementsFile) {
     Write-Host 'Requirements file found:' $requirementsFile
 
-    $streamlitAvailable = (Invoke-Python -PythonExe $pythonExe -Arguments @('-c', 'import streamlit') -AllowFailure -Quiet) -eq 0
-    if (-not $streamlitAvailable) {
+    $dependenciesAvailable = (Invoke-Python -PythonExe $pythonExe -Arguments @(
+        '-c',
+        'import importlib.util, sys; required = ["streamlit", "openai", "tiktoken", "plotly", "dotenv", "anthropic"]; missing = [name for name in required if importlib.util.find_spec(name) is None]; print(", ".join(missing)); sys.exit(1 if missing else 0)'
+    ) -AllowFailure) -eq 0
+    if (-not $dependenciesAvailable) {
         Write-Host 'Installing dependencies from requirements.txt...'
         [void](Invoke-Python -PythonExe $pythonExe -Arguments @('-m', 'pip', 'install', '-r', $requirementsFile))
     }
